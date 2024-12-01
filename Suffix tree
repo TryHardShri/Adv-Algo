@@ -1,0 +1,130 @@
+#include <iostream>
+#include <unordered_map>
+#include <string>
+using namespace std;
+// Suffix Tree Node
+struct SuffixTreeNode {
+unordered_map<char, SuffixTreeNode*> children; // Children nodes
+int start, *end; // Start and end indices of the string
+int suffixIndex; // Suffix index for leaf nodes
+// Constructor for the node
+SuffixTreeNode(int start, int *end) {
+this->start = start;
+this->end = end;
+this->suffixIndex = -1;
+}
+};
+// Suffix Tree Class
+class SuffixTree {
+private:
+string text;
+SuffixTreeNode* root;
+int size;
+public:
+// Constructor
+SuffixTree(const string &str) {
+text = str;
+size = str.length();
+root = new SuffixTreeNode(-1, new int(-1)); // Root node with invalid
+indices
+buildSuffixTree();
+}
+
+// Builds the suffix tree using Ukkonen's algorithm
+void buildSuffixTree() {
+int *rootEnd = new int(-1);
+root = new SuffixTreeNode(-1, rootEnd); // Root has no string
+SuffixTreeNode* activeNode = root;
+int activeEdge = -1, activeLength = 0, remainder = 0;
+for (int i = 0; i < size; i++) {
+// Extend the tree with the new character text[i]
+remainder++;
+while (remainder > 0) {
+if (activeLength == 0) {
+activeEdge = i;
+}
+if (activeNode->children.find(text[activeEdge]) == activeNode-
+>children.end()) {
+// Create a new leaf node
+activeNode->children[text[activeEdge]] = new SuffixTreeNode(i,
+new int(size - 1));
+remainder--;
+} else {
+// Handle node with active length
+SuffixTreeNode* nextNode = activeNode-
+>children[text[activeEdge]];
+int edgeLength = *(nextNode->end) - nextNode->start + 1;
+if (activeLength >= edgeLength) {
+activeEdge += edgeLength;
+activeLength -= edgeLength;
+activeNode = nextNode;
+continue;
+}
+if (text[nextNode->start + activeLength] == text[i]) {
+activeLength++;
+break;
+}
+// Split the edge
+SuffixTreeNode* splitNode = new SuffixTreeNode(nextNode-
+>start, new int(nextNode->start + activeLength - 1));
+activeNode->children[text[activeEdge]] = splitNode;
+
+splitNode->children[text[i]] = new SuffixTreeNode(i, new int(size -
+1));
+nextNode->start += activeLength;
+splitNode->children[text[nextNode->start]] = nextNode;
+remainder--;
+}
+if (activeNode == root && activeLength > 0) {
+activeLength--;
+activeEdge = i - remainder + 1;
+} else if (activeNode != root) {
+activeNode = activeNode->children[text[activeEdge]];
+}
+}
+}
+}
+// Print the Suffix Tree
+void printTree() {
+printTree(root, text);
+}
+// This method ensures the correct substring is printed
+void printTree(SuffixTreeNode* node, const string &str) {
+if (node == nullptr) return;
+// If it's a leaf node, print the suffix index and the suffix string
+if (node->suffixIndex != -1) {
+cout << "Suffix Index: " << node->suffixIndex << ", Suffix: " <<
+str.substr(node->start) << endl;
+} else {
+// Internal node, print the edge represented by this node
+int endIndex = *(node->end);
+if (endIndex >= size) {
+endIndex = size - 1; // Fix the index to stay within bounds
+}
+// Handle case where start == end, print a single character edge
+if (node->start == endIndex) {
+cout << "Edge: " << str[node->start] << endl;
+} else {
+
+cout << "Edge: " << str.substr(node->start, endIndex - node->start +
+1) << endl;
+}
+}
+// Recursively print all children
+for (auto& child : node->children) {
+printTree(child.second, str);
+}
+}
+};
+int main() {
+// Input the string
+string input;
+cout << "Enter a string: ";
+cin >> input;
+// Create suffix tree
+SuffixTree tree(input);
+// Print the suffix tree
+cout << "Suffix Tree: \n";
+tree.printTree();
+return 0;
+}
