@@ -1,0 +1,61 @@
+#include <iostream>
+#include <vector>
+#include <cstdlib> // For std::rand and std::srand
+#include <ctime> // For std::time
+// Function to swap two elements
+void swap(int &a, int &b) {
+int temp = a;
+a = b;
+b = temp;
+}
+// Function to partition the array
+int partition(std::vector<int>& arr, int low, int high) {
+int randomIndex = low + std::rand() % (high - low + 1);
+swap(arr[randomIndex], arr[high]);
+int pivot = arr[high];
+int i = low - 1;
+for (int j = low; j < high; j++) {
+if (arr[j] <= pivot) {
+i++;
+swap(arr[i], arr[j]);
+}
+}
+swap(arr[i + 1], arr[high]);
+return i + 1;
+}
+int randomizedSelect(std::vector<int>& arr, int low, int high, int i) {
+if (low == high) {
+return arr[low];
+}
+int pivotIndex = partition(arr, low, high);
+int k = pivotIndex - low + 1;
+
+if (i == k) {
+return arr[pivotIndex];
+} else if (i < k) {
+return randomizedSelect(arr, low, pivotIndex - 1, i);
+} else {
+return randomizedSelect(arr, pivotIndex + 1, high, i - k);
+}
+}
+int main() {
+std::srand(std::time(0));
+int n, i;
+std::cout << "Enter the number of elements: ";
+std::cin >> n;
+std::vector<int> arr(n);
+std::cout << "Enter " << n << " elements:\n";
+for (int j = 0; j < n; ++j) {
+std::cin >> arr[j];
+}
+std::cout << "Enter the i-th position to find (1-based index): ";
+std::cin >> i;
+if (i < 1 || i > n) {
+std::cerr << "Error: i is out of range." << std::endl;
+return 1;
+}
+// Find the i-th smallest element
+int result = randomizedSelect(arr, 0, n - 1, i);
+std::cout << "The " << i << "-th smallest element is " << result << std::endl;
+return 0;
+}
