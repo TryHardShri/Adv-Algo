@@ -1,0 +1,63 @@
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+struct TrieNode {
+// Array for child nodes of each node
+TrieNode* child[26];
+// for end of word
+bool wordEnd;
+TrieNode() {
+wordEnd = false;
+for (int i = 0; i < 26; i++) {
+child[i] = nullptr;
+}
+}
+};
+// Method to insert a key into the Trie
+void insertKey(TrieNode* root, const string& key) {
+TrieNode* curr = root;
+for (char c : key) {
+if (curr->child[c - 'a'] == nullptr) {
+TrieNode* newNode = new TrieNode();
+curr->child[c - 'a'] = newNode;
+}
+curr = curr->child[c - 'a'];
+}
+curr->wordEnd = true;
+
+}
+// Method to search a key in the Trie
+bool searchKey(TrieNode* root, const string& key) {
+TrieNode* curr = root;
+for (char c : key) {
+if (curr->child[c - 'a'] == nullptr)
+return false;
+curr = curr->child[c - 'a'];
+}
+return curr->wordEnd;
+}
+int main() {
+TrieNode* root = new TrieNode();
+string input;
+cout << "Enter words to insert into the Trie (type 'exit' to stop):\n";
+while (true) {
+cout << "Insert word: ";
+cin >> input;
+if (input == "exit") break;
+insertKey(root, input);
+}
+cout << "Enter words to search in the Trie (type 'exit' to stop):\n";
+while (true) {
+cout << "Search for word: ";
+cin >> input;
+if (input == "exit") break;
+cout << "Key: " << input << "\n";
+if (searchKey(root, input))
+cout << "Present\n";
+else
+
+cout << "Not Present\n";
+}
+return 0;
+}
